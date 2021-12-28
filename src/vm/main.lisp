@@ -423,44 +423,17 @@
 
 (vm_create 'Roger 1000)
 (vm_load 'Roger '(
-    (JMP main)
-    
-    (LABEL fact)
-    
-    (MOVE FP R0)
-    (MOVE (:CONST -1) R1)
-    (ADD R0 R1)
-    (LOAD R1 R1)
-    
-    (MOVE (:CONST 1) R0)
-    
-    (CMP R1 (:CONST 1))
-    (JEQ RTN_FACT)
-    
-    (MOVE R1 R2)
-    (DECR R2)
-    
-    (PUSH R1)
-    (PUSH R2)
-    (PUSH (:CONST 1))
-    
-    (JSR fact)
-    (POP R1);depiler const 1
-    (POP R1);depiler R2
-    (POP R1);depiler R1
-    (MUL R1 R0)
-    
-    (LABEL RTN_FACT)
-    (RTN)
-))
-(vm_load 'Roger '(
-    (LABEL main)
-    
-    (PUSH (:CONST 5))
-    (PUSH (:CONST 1))
-    (JSR fact)
-    
-    (HALT)
+
+    (MOVE (:CONST 11) R0) (PUSH R0) (MOVE (:CONST 2) R0) (PUSH R0) (POP R0)
+ (POP R1) (ADD R1 R0) (PUSH R0) (MOVE (:CONST 6) R0) (PUSH R0)
+ (MOVE (:CONST 1) R0) (PUSH R0) (POP R0) (POP R1) (SUB R1 R0) (POP R1)
+ (CMP R1 R0) (JGT IF_TRUE0) (LABEL IF_FALSE0) (MOVE (:CONST 2) R0) (PUSH R0)
+ (MOVE (:CONST 1) R0) (PUSH R0) (POP R0) (POP R1) (ADD R1 R0) (JMP IF_END0)
+ (LABEL IF_TRUE0) (MOVE (:CONST 3) R0) (PUSH R0) (MOVE (:CONST 4) R0) (POP R1)
+ (CMP R1 R0) (JNE IF_TRUE1) (LABEL IF_FALSE1) (MOVE (:CONST 0) R0)
+ (JMP IF_END1) (LABEL IF_TRUE1) (MOVE (:CONST 1) R0) (JMP IF_END1)
+ (LABEL IF_END1) (JMP IF_END0) (LABEL IF_END0)
+ 
 ))
 ;(vm_run 'Roger)
 (write (vm_run 'Roger))
