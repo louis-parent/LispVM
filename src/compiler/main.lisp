@@ -23,6 +23,15 @@
 				((eq operator '+)
 					(compile_add_expression args)
 				)
+				((eq operator '-)
+					(compile_sub_expression args)
+				)
+				((eq operator '*)
+					(compile_mul_expression args)
+				)
+				((eq operator '/)
+					(compile_div_expression args)
+				)
 				; TODO Switch sur tout les opérateurs de base
 			)
 		)
@@ -43,6 +52,63 @@
 				(POP R0) ; Récupération de l'opérante de droite
 				(POP R1) ; Récupération de l'opérante de gauche
 				(ADD R1 R0) ; Calcul du résultat et stockage dans R0
+			)
+		)
+	)
+)
+
+(defun compile_sub_expression (args)
+	(let (
+			(left (car args))
+			(right (cadr args))
+		)
+		(append
+			(append 
+				(append (compile_lisp_expression left) '((PUSH R0))) ; Sauvegarde de l'opérante de gauche dans la pile
+				(append (compile_lisp_expression right) '((PUSH R0))); Sauvegarde de l'opérante de droite dans la pile
+			)
+			'(
+				(POP R0) ; Récupération de l'opérante de droite
+				(POP R1) ; Récupération de l'opérante de gauche
+				(SUB R1 R0) ; Calcul du résultat et stockage dans R0
+			)
+		)
+	)
+)
+
+(defun compile_mul_expression (args)
+	(let (
+			(left (car args))
+			(right (cadr args))
+		)
+		(append
+			(append 
+				(append (compile_lisp_expression left) '((PUSH R0))) ; Sauvegarde de l'opérante de gauche dans la pile
+				(append (compile_lisp_expression right) '((PUSH R0))); Sauvegarde de l'opérante de droite dans la pile
+			)
+			'(
+				(POP R0) ; Récupération de l'opérante de droite
+				(POP R1) ; Récupération de l'opérante de gauche
+				(MUL R1 R0) ; Calcul du résultat et stockage dans R0
+			)
+		)
+	)
+)
+
+(defun compile_div_expression (args)
+	(let (
+			(left (car args))
+			(right (cadr args))
+		)
+		(append
+			(append 
+				(append (compile_lisp_expression left) '((PUSH R0))) ; Sauvegarde de l'opérante de gauche dans la pile
+				(append (compile_lisp_expression right) '((PUSH R0))); Sauvegarde de l'opérante de droite dans la pile
+			)
+			'(
+				(POP R0) ; Récupération de l'opérante de droite
+				(POP R1) ; Récupération de l'opérante de gauche
+				(DIV R1 R0) ; Calcul du résultat et stockage dans R0
 			)
 		)
 	)
