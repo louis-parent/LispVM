@@ -1,76 +1,121 @@
-(defun compile_lisp (instructions) (compile_instructions instructions '((I (:VAR 4)))))
-
-(defun compile_instructions (instructions environement)
-    (if (null instructions)
-        NIL
-        (let (
-                (left (car instructions))
-                (right (cdr instructions))
-                (bytecode '())
-            )
-            
-            (append
-                (append bytecode
-                    (list
-                        (if (atom left)
-                            (compile_atom left right environement)
-                            (compile_instructions left environement)
-                        )
-                    )
-                )
-                (if (atom right)
-                    (compile_atom right NIL environement)
-                    (compile_instructions right environement)
-                )
-            )
-        )
-    )
+(defun compile_lisp (expressions)
+	(if (null expressions)
+		'()
+		(append (compile_lisp_expression (car expressions)) (compile_lisp (cdr expressions)))
+	)
 )
 
-(defun compile_atom (atom next environement)
-    (if (or (null atom) (numberp atom))
-        atom
-        (cond
-            ((eq atom 'DEFUN)
-                (compile_defun next environement)
-            )
-            (T atom)
-        )
-    )
+(defun compile_lisp_expression (expression)
+	(if (atom expression)
+		
+		; Cas d'un littéral ou d'un symbole
+		(if (numberp expression)
+			(compile_lit_expression expression)
+			(cons expression '()) ; TODO : Symbole de variable à interpréter => ajout de l'environement
+		)
+		
+		; Cas d'une expression à évaluer
+		(let (
+				(operator (car expression))
+				(args (cdr expression))
+			)
+			(cond 
+				((eq operator '+)
+					(compile_add_expression args)
+				)
+				((eq operator '-)
+					(compile_sub_expression args)
+				)
+				((eq operator '*)
+					(compile_mul_expression args)
+				)
+				((eq operator '/)
+					(compile_div_expression args)
+				)
+				; TODO Switch sur tout les opérateurs de base
+			)
+		)
+	)
 )
 
-(defun compile_defun (func environement)
-    (let (
-            (name (car func))
-            (args (cadr func))
-            (body (cddr func))
-            (environement (append environement (list (cons (car func) (cons ':FUNC (compile_defun_args (cadr func)))))))
-        )
-        
-        (cons
-            (list 'LABEL name)
-            (compile_instructions body environement)
-        )
-    )
+(defun compile_add_expression (args)
+	(let (
+			(left (car args))
+			(right (cadr args))
+		)
+		(append
+			(append 
+				(append (compile_lisp_expression left) '((PUSH R0))) ; Sauvegarde de l'opérante de gauche dans la pile
+				(append (compile_lisp_expression right) '((PUSH R0))); Sauvegarde de l'opérante de droite dans la pile
+			)
+			'(
+				(POP R0) ; Récupération de l'opérante de droite
+				(POP R1) ; Récupération de l'opérante de gauche
+				(ADD R1 R0) ; Calcul du résultat et stockage dans R0
+			)
+		)
+	)
 )
 
-(defun compile_defun_args (args)
-    (if (null args)
-        '()
-        (let (
-                (size (length args))
-            )
-            (cons 
-                (list (car args) (* size -1))
-                (compile_defun_args (cdr args))
-            )
-        )
-    )
+(defun compile_sub_expression (args)
+	(let (
+			(left (car args))
+			(right (cadr args))
+		)
+		(append
+			(append 
+				(append (compile_lisp_expression left) '((PUSH R0))) ; Sauvegarde de l'opérante de gauche dans la pile
+				(append (compile_lisp_expression right) '((PUSH R0))); Sauvegarde de l'opérante de droite dans la pile
+			)
+			'(
+				(POP R0) ; Récupération de l'opérante de droite
+				(POP R1) ; Récupération de l'opérante de gauche
+				(SUB R1 R0) ; Calcul du résultat et stockage dans R0
+			)
+		)
+	)
 )
 
-;(compile_lisp 
-;    '(
-;        (defun fact (n p)  (if (= n 1) 1 (* n (fact (- n 1)))))
-;        (fact 2)
-;    )
-;)
+(defun compile_mul_expression (args)
+	(let (
+			(left (car args))
+			(right (cadr args))
+		)
+		(append
+			(append 
+				(append (compile_lisp_expression left) '((PUSH R0))) ; Sauvegarde de l'opérante de gauche dans la pile
+				(append (compile_lisp_expression right) '((PUSH R0))); Sauvegarde de l'opérante de droite dans la pile
+			)
+			'(
+				(POP R0) ; Récupération de l'opérante de droite
+				(POP R1) ; Récupération de l'opérante de gauche
+				(MUL R1 R0) ; Calcul du résultat et stockage dans R0
+			)
+		)
+	)
+)
+
+(defun compile_div_expression (args)
+	(let (
+			(left (car args))
+			(right (cadr args))
+		)
+		(append
+			(append 
+				(append (compile_lisp_expression left) '((PUSH R0))) ; Sauvegarde de l'opérante de gauche dans la pile
+				(append (compile_lisp_expression right) '((PUSH R0))); Sauvegarde de l'opérante de droite dans la pile
+			)
+			'(
+				(POP R0) ; Récupération de l'opérante de droite
+				(POP R1) ; Récupération de l'opérante de gauche
+				(DIV R1 R0) ; Calcul du résultat et stockage dans R0
+			)
+		)
+	)
+)
+
+(defun compile_lit_expression (value)
+	(cons (list 'MOVE (list ':CONST value) 'R0) NIL) ; Stockage de la valeur dans R0
+)
+
+(compile_lisp '((+ 1 1)))
