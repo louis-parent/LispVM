@@ -41,20 +41,20 @@ The list of the instruction are the following :
 | `(NOP)` | Nothing |
 | `(HALT)` | Stopping program |
 
-## The virtual machine
+## The virtual machine
 
 The virtual machine (VM) reads the bytecode and execute it in a kind of simplified register machine.
 The model used is the register machine to understand the functioning of a real machine.
 
 The virtual machine is split in two parts : the memory and the register.
 
-### The memory
+### The memory
 
 The memory contains two blocks :
 - The stack block is the traditional stack, which is used in order to save data more durably than the register
 - The code block is the bytecode stored
 
-### The register
+### The register
 
 The VM use a simplified model of 15 registers, which are the following :
 
@@ -76,6 +76,6 @@ The VM use a simplified model of 15 registers, which are the following :
 |   SUP    | Superior flag (True if the last comparison result is greater) |
 |   FNIL   | NIL flag (True if the last test result is NIL) |
 
-## Examples
+## Examples
 
 Some examples that can be compiled and run are placed in the examples' folder. The `*.asm` are already compile code that can be run with the VM, and `*.lisp` needs to be compiled before running.
