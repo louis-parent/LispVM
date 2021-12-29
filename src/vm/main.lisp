@@ -400,14 +400,14 @@
 )
 
 (defun vm_run_jtrue (vm_name arguments)
-    (if (get vm_name 'FNIL)
+    (if (not (get vm_name 'FNIL))
         (setf (get vm_name 'PC) (vm_get_adresse_label vm_name  (vm_get_address vm_name (car arguments))))
         NIL
     )
 )
 
 (defun vm_run_jnil (vm_name arguments)
-    (if (not (get vm_name 'FNIL))
+    (if  (get vm_name 'FNIL)
         (setf (get vm_name 'PC) (vm_get_adresse_label vm_name  (vm_get_address vm_name (car arguments))))
         NIL
     )
@@ -424,15 +424,24 @@
 (vm_create 'Roger 1000)
 (vm_load 'Roger '(
 
-    (MOVE (:CONST 11) R0) (PUSH R0) (MOVE (:CONST 2) R0) (PUSH R0) (POP R0)
+   (MOVE (:CONST 11) R0) (PUSH R0) (MOVE (:CONST 2) R0) (PUSH R0) (POP R0)
  (POP R1) (ADD R1 R0) (PUSH R0) (MOVE (:CONST 6) R0) (PUSH R0)
  (MOVE (:CONST 1) R0) (PUSH R0) (POP R0) (POP R1) (SUB R1 R0) (POP R1)
- (CMP R1 R0) (JGT IF_TRUE0) (LABEL IF_FALSE0) (MOVE (:CONST 2) R0) (PUSH R0)
- (MOVE (:CONST 1) R0) (PUSH R0) (POP R0) (POP R1) (ADD R1 R0) (JMP IF_END0)
- (LABEL IF_TRUE0) (MOVE (:CONST 3) R0) (PUSH R0) (MOVE (:CONST 4) R0) (POP R1)
- (CMP R1 R0) (JNE IF_TRUE1) (LABEL IF_FALSE1) (MOVE (:CONST 0) R0)
- (JMP IF_END1) (LABEL IF_TRUE1) (MOVE (:CONST 1) R0) (JMP IF_END1)
- (LABEL IF_END1) (JMP IF_END0) (LABEL IF_END0)
+ (CMP R1 R0) (JGT CMP_GREATER_TRUE0) (MOVE (:CONST NIL) R0)
+ (JMP CMP_GREATER_END0) (LABEL CMP_GREATER_TRUE0) (MOVE (:CONST T) R0)
+ (LABEL CMP_GREATER_END0) (TEST R0) (JTRUE IF_TRUE1) (MOVE (:CONST 2) R0)
+ (PUSH R0) (MOVE (:CONST 1) R0) (PUSH R0) (POP R0) (POP R1) (ADD R1 R0)
+ (JMP IF_END1) (LABEL IF_TRUE1) (MOVE (:CONST 3) R0) (PUSH R0)
+ (MOVE (:CONST 4) R0) (POP R1) (CMP R1 R0) (JNE CMP_NOT_EQUAL_TRUE0)
+ (MOVE (:CONST NIL) R0) (JMP CMP_NOT_EQUAL_END0) (LABEL CMP_NOT_EQUAL_TRUE0)
+ (MOVE (:CONST T) R0) (LABEL CMP_NOT_EQUAL_END0) (TEST R0)
+ (JNIL CMP_NULL_TRUE0) (MOVE (:CONST NIL) R0) (JMP CMP_NULL_END0)
+ (LABEL CMP_NULL_TRUE0) (MOVE (:CONST T) R0) (LABEL CMP_NULL_END0) (TEST R0)
+ (JTRUE CMP_NULL_TRUE1) (MOVE (:CONST T) R0) (JMP CMP_NULL_END1)
+ (LABEL CMP_NULL_TRUE1) (MOVE (:CONST NIL) R0) (LABEL CMP_NULL_END1) (TEST R0)
+ (JTRUE IF_TRUE0) (MOVE (:CONST 0) R0) (JMP IF_END0) (LABEL IF_TRUE0)
+ (MOVE (:CONST 1) R0) (JMP IF_END0) (LABEL IF_END0) (JMP IF_END1)
+ (LABEL IF_END1)
  
 ))
 ;(vm_run 'Roger)
