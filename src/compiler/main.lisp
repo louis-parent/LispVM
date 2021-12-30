@@ -181,14 +181,21 @@
 			(name (car args))
 			(params (cadr args))
 			(body (cddr args))
+            (label_skip (create_label "skip_function"))
 		)
 		(add_function_to_globals name (create_function_params_offset_list params))
 		(append 
-			(cons (list 'LABEL name) NIL)
+			(list
+				(list 'JMP label_skip)
+				(list 'LABEL name)
+			)
 			(append
 				(compile_lisp_expressions body (append environment (create_function_params_offset_list params)))
-				(cons (list 'RETURN) NIL)
-			)	
+				(list 
+					(list 'RETURN)
+					(list 'LABEL label_skip)
+				)
+			)
 		)
 	)
 )
