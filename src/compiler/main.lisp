@@ -46,6 +46,9 @@
 				((eq operator 'defun)
 				  (compile_defun_expression args environment)
 				)
+				((eq operator 'cond)
+				    (compile_cond_expression args environment)
+				)
 				((eq operator 'if)
 					(compile_if_expression args environment)
 				)
@@ -91,7 +94,7 @@
 
 (defun compile_var_expression (name environment)
 	(if (null environment)
-		(error 'on-var-never-initialized :message (format t "~a~% doesn't exist" name)) ; La variable n'a pas été trouvé dans l'environement
+		(error 'on-var-never-initialized :message (format t "~a~% doesn't exist" name)) ; La variable n'a pas été trouvé dans l'environment
 		(let (
 				(current (car environment))
 			)
@@ -101,7 +104,7 @@
 					(list 'ADD (list ':CONST (cadr current)) 'R1) ; Calcul de l'adresse de la variable selon l'offset
 					'(LOAD R1 R0) ; Stockage de la valeur dans R0
 				)
-				(compile_var_expression name (cdr environment)) ; Sinon on cherche dans le reste de l'environement
+				(compile_var_expression name (cdr environment)) ; Sinon on cherche dans le reste de l'environment
 			)
 		)
 	)
@@ -201,7 +204,7 @@
 							(append
 								(compile_lisp_expressions body (append environment (create_function_params_offset_list params)))
 								(list 
-									(list 'RETURN)
+									(list 'RTN)
 									(list 'LABEL label_skip)
 								)
 							)
@@ -236,18 +239,51 @@
 	))
 )
 
-(defun compile_if_expression (next environement)
+(defun compile_cond_expression (next environment)
     (let 
         (
-            (arg (compile_lisp_expression (car next) environement))
-            (body_true (compile_lisp_expression (cadr next) environement))
-            (body_false (compile_lisp_expression (caddr next) environement))
+            (body (car (comparison_cond_to_if next environment)))
+        )
+    
+        (compile_lisp_expression body environment)
+    )
+)
+
+(defun comparison_cond_to_if (args environment)
+    (let
+        (
+            (next_conds (cdr args))
+            (first_cond (caar args))
+            (first_do (cadar args))
+        )
+        
+        (if (null args)
+            (list (list));NIL avec le append
+            (list
+                (append
+                    (list
+                        'if
+                        first_cond
+                        first_do
+                    )
+                    (comparison_cond_to_if next_conds environment)
+                )
+            )
+        )
+        
+    )
+    
+)
+
+(defun compile_if_expression (next environment)
+    (let 
+        (
+            (arg (compile_lisp_expression (car next) environment))
+            (body_true (compile_lisp_expression (cadr next) environment))
+            (body_false (compile_lisp_expression (caddr next) environment))
             (label_true (create_label "if_true"))
             (label_end (create_label "if_end"))
         )
-        
-        ;(write-line (nth 1 (car next)))
-        ;(write-line (caddr next))
         
         (append
             (append arg
@@ -263,11 +299,11 @@
     )
 )
 
-(defun compile_equal_expression (args environement)
+(defun compile_equal_expression (args environment)
     (let 
         (
-            (arg1 (compile_lisp_expression (car args) environement))
-            (arg2 (compile_lisp_expression (cadr args) environement))
+            (arg1 (compile_lisp_expression (car args) environment))
+            (arg2 (compile_lisp_expression (cadr args) environment))
             (label_true (create_label "cmp_equal_true"))
             (label_end (create_label "cmp_equal_end"))
         )
@@ -288,11 +324,11 @@
     )
 )
 
-(defun compile_not_equal_expression (args environement)
+(defun compile_not_equal_expression (args environment)
     (let 
         (
-            (arg1 (compile_lisp_expression (car args) environement))
-            (arg2 (compile_lisp_expression (cadr args) environement))
+            (arg1 (compile_lisp_expression (car args) environment))
+            (arg2 (compile_lisp_expression (cadr args) environment))
             (label_true (create_label "cmp_not_equal_true"))
             (label_end (create_label "cmp_not_equal_end"))
         )
@@ -313,11 +349,11 @@
     )
 )
 
-(defun compile_greater_expression (args environement)
+(defun compile_greater_expression (args environment)
     (let 
         (
-            (arg1 (compile_lisp_expression (car args) environement))
-            (arg2 (compile_lisp_expression (cadr args) environement))
+            (arg1 (compile_lisp_expression (car args) environment))
+            (arg2 (compile_lisp_expression (cadr args) environment))
             (label_true (create_label "cmp_greater_true"))
             (label_end (create_label "cmp_greater_end"))
         )
@@ -338,11 +374,11 @@
     )
 )
 
-(defun compile_greater_equal_expression (args environement)
+(defun compile_greater_equal_expression (args environment)
     (let 
         (
-            (arg1 (compile_lisp_expression (car args) environement))
-            (arg2 (compile_lisp_expression (cadr args) environement))
+            (arg1 (compile_lisp_expression (car args) environment))
+            (arg2 (compile_lisp_expression (cadr args) environment))
             (label_true (create_label "cmp_greater_equal_true"))
             (label_end (create_label "cmp_greater_equal_end"))
         )
@@ -363,11 +399,11 @@
     )
 )
 
-(defun compile_lower_expression (args environement)
+(defun compile_lower_expression (args environment)
     (let 
         (
-            (arg1 (compile_lisp_expression (car args) environement))
-            (arg2 (compile_lisp_expression (cadr args) environement))
+            (arg1 (compile_lisp_expression (car args) environment))
+            (arg2 (compile_lisp_expression (cadr args) environment))
             (label_true (create_label "cmp_lower_true"))
             (label_end (create_label "cmp_lower_end"))
         )
@@ -388,11 +424,11 @@
     )
 )
 
-(defun compile_lower_equal_expression (args environement)
+(defun compile_lower_equal_expression (args environment)
     (let 
         (
-            (arg1 (compile_lisp_expression (car args) environement))
-            (arg2 (compile_lisp_expression (cadr args) environement))
+            (arg1 (compile_lisp_expression (car args) environment))
+            (arg2 (compile_lisp_expression (cadr args) environment))
             (label_true (create_label "cmp_lower_equal_true"))
             (label_end (create_label "cmp_lower_equal_end"))
         )
@@ -413,10 +449,10 @@
     )
 )
 
-(defun compile_null_expression (args environement)
+(defun compile_null_expression (args environment)
     (let 
         (
-            (arg (compile_lisp_expression (car args) environement))
+            (arg (compile_lisp_expression (car args) environment))
             (label_true (create_label "cmp_null_true"))
             (label_end (create_label "cmp_null_end"))
         )
@@ -434,10 +470,10 @@
     )
 )
 
-(defun compile_not_expression (args environement)
+(defun compile_not_expression (args environment)
     (let 
         (
-            (arg (compile_lisp_expression (car args) environement))
+            (arg (compile_lisp_expression (car args) environment))
             (label_true (create_label "cmp_null_true"))
             (label_end (create_label "cmp_null_end"))
         )
