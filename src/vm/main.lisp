@@ -217,6 +217,12 @@
                     (write-line " ")
                 )
             ) 
+            ((eql operator 'DUMP)
+                (progn
+                    (write (get vm_name 'memory))
+                    (write-line " ")
+                )
+            ) 
         )
     )
 )
@@ -423,26 +429,46 @@
 
 (vm_create 'Roger 1000)
 (vm_load 'Roger '(
-
-   (MOVE (:CONST 11) R0) (PUSH R0) (MOVE (:CONST 2) R0) (PUSH R0) (POP R0)
- (POP R1) (ADD R1 R0) (PUSH R0) (MOVE (:CONST 6) R0) (PUSH R0)
- (MOVE (:CONST 1) R0) (PUSH R0) (POP R0) (POP R1) (SUB R1 R0) (POP R1)
- (CMP R1 R0) (JGT CMP_GREATER_TRUE0) (MOVE (:CONST NIL) R0)
- (JMP CMP_GREATER_END0) (LABEL CMP_GREATER_TRUE0) (MOVE (:CONST T) R0)
- (LABEL CMP_GREATER_END0) (TEST R0) (JTRUE IF_TRUE1) (MOVE (:CONST 2) R0)
- (PUSH R0) (MOVE (:CONST 1) R0) (PUSH R0) (POP R0) (POP R1) (ADD R1 R0)
- (JMP IF_END1) (LABEL IF_TRUE1) (MOVE (:CONST 3) R0) (PUSH R0)
- (MOVE (:CONST 4) R0) (POP R1) (CMP R1 R0) (JNE CMP_NOT_EQUAL_TRUE0)
- (MOVE (:CONST NIL) R0) (JMP CMP_NOT_EQUAL_END0) (LABEL CMP_NOT_EQUAL_TRUE0)
- (MOVE (:CONST T) R0) (LABEL CMP_NOT_EQUAL_END0) (TEST R0)
- (JNIL CMP_NULL_TRUE0) (MOVE (:CONST NIL) R0) (JMP CMP_NULL_END0)
- (LABEL CMP_NULL_TRUE0) (MOVE (:CONST T) R0) (LABEL CMP_NULL_END0) (TEST R0)
- (JTRUE CMP_NULL_TRUE1) (MOVE (:CONST T) R0) (JMP CMP_NULL_END1)
- (LABEL CMP_NULL_TRUE1) (MOVE (:CONST NIL) R0) (LABEL CMP_NULL_END1) (TEST R0)
- (JTRUE IF_TRUE0) (MOVE (:CONST 0) R0) (JMP IF_END0) (LABEL IF_TRUE0)
- (MOVE (:CONST 1) R0) (JMP IF_END0) (LABEL IF_END0) (JMP IF_END1)
- (LABEL IF_END1)
- 
+	(JMP SKIP_FUNCTION0)
+	(LABEL F)
+		(MOVE FP R1)
+		(ADD (:CONST -1) R1)
+		(LOAD R1 R0)
+		(PUSH R0) ; x
+		
+		(MOVE (:CONST 5) R0)
+		(PUSH R0) ; 5
+		 
+		(POP R0)
+		(POP R1) 
+		(ADD R1 R0) 
+		(PUSH R0) ; x + 5 = a
+		
+		(MOVE (:CONST 2) R0)
+		(PUSH R0) ; 2 = b
+		
+		(MOVE FP R1)
+		(ADD (:CONST 4) R1)
+ 		(LOAD R1 R0)
+ 		(PUSH R0) ; a
+ 		
+ 		(MOVE FP R1)
+ 		(ADD (:CONST 5) R1)
+ 		(LOAD R1 R0)
+ 		(PUSH R0) ; b
+ 		
+ 		(POP R0)
+ 		(POP R1)
+ 		(MUL R1 R0) ; a * b
+ 		
+ 		(POP R2)
+ 		(POP R2) ; clear stack
+ 		
+ 		(RTN)
+ 	(LABEL SKIP_FUNCTION0)
+ 	(PUSH (:CONST 1))
+ 	(PUSH (:CONST 1))
+ 	(JSR F)
 ))
 ;(vm_run 'Roger)
 (write (vm_run 'Roger))
