@@ -76,6 +76,9 @@
         ((eql operator 'let)
           (compile_let_expression args environment)
         )
+        ((eql operator 'progn)
+          (compile_let_expression args environment)
+        )
 				; TODO Switch sur tout les opérateurs de base
 			)
 		)
@@ -583,6 +586,10 @@
 (defun create_pop_instruction (register)
 	(decrement_frame_offset)
 	(list 'POP register)
+)
+
+(defun compile_progn_expression (args environment)
+	(compile_lisp_expressions args environment)
 )
 
 (write (compile_lisp '(
