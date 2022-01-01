@@ -334,7 +334,8 @@
         (
             (nb_arguments (vm_get_value vm_name 'R0))
         )
-        (vm_run_move vm_name (list ':CONST (apply func  (list (get_argument_func_lisp vm_name nb_arguments))) 'R0))
+        
+        (vm_run_move vm_name (list (list ':CONST (apply func (get_argument_func_lisp vm_name nb_arguments))) 'R0))
         (vm_run_rtn vm_name arguments)
     )
 )
@@ -342,15 +343,16 @@
 (defun get_argument_func_lisp (vm_name nb_arguments)
     (if (= nb_arguments 0)
         '()
-        (progn 
+        (progn
             (vm_run_move vm_name (list 'FP 'R0))
             (vm_run_move vm_name (list (list':CONST nb_arguments) 'R1))
             (vm_run_sub vm_name (list 'R0 'R1))
             (vm_run_move vm_name (list 'R1 'R0))
             (vm_run_load vm_name (list 'R0 'R0))
-            (append (list (vm_get_value vm_name 'R0))
-            (get_argument_func_lisp vm_name (- nb_arguments 1)))
-
+            (append 
+                (list (vm_get_value vm_name 'R0))
+                (get_argument_func_lisp vm_name (- nb_arguments 1))
+            )
         )
     )
 )
@@ -471,16 +473,9 @@
 
 (vm_create 'Roger 1000)
 (vm_load 'Roger '(
-(JMP SKIP_FUNCTION0) (LABEL TEST_FUNC) (RTN) (LABEL SKIP_FUNCTION0)
- (JMP SKIP_FUNCTION1) (LABEL F) (MOVE FP R1) (ADD (:CONST -1) R1) (LOAD R1 R0)
- (PUSH R0) (MOVE (:CONST 0) R0) (POP R1) (CMP R1 R0) (JEQ CMP_EQUAL_TRUE0)
- (MOVE (:CONST NIL) R0) (JMP CMP_EQUAL_END0) (LABEL CMP_EQUAL_TRUE0)
- (MOVE (:CONST T) R0) (LABEL CMP_EQUAL_END0) (TEST R0) (JTRUE IF_TRUE0)
- (MOVE FP R1) (ADD (:CONST -1) R1) (LOAD R1 R0) (PUSH R0) (MOVE (:CONST 1) R0)
- (PUSH R0) (POP R0) (POP R1) (SUB R1 R0) (JMP IF_END0) (LABEL IF_TRUE0)
- (MOVE (:CONST 0) R0) (JMP IF_END0) (LABEL IF_END0) (RTN)
- (LABEL SKIP_FUNCTION1) (MOVE (:CONST 5) R0) (PUSH R0) (PUSH (:CONST 1))
- (JSR LIST) (PUSH R0) (PUSH (:CONST 1)) (JSR WRITE)
+    (MOVE (:CONST TEST) R0) (PUSH R0) (MOVE (:CONST 1) R0) (PUSH R0)
+    (MOVE (:CONST T) R0) (PUSH R0) (PUSH (:CONST 3)) (JSR LIST) (PUSH R0)
+    (PUSH (:CONST 1)) (JSR WRITE)
 ))
 ;(vm_run 'Roger)
-(write (vm_run 'Roger))
+(vm_run 'Roger)

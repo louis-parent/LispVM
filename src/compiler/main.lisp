@@ -19,9 +19,11 @@
 (defun compile_lisp_expression (expression environment)
 	(if (atom expression)
 		; Cas d'un littéral ou d'un symbole
-		(if (or (or (numberp expression) (eq 'NIL expression)) (eq 'T expression))
-			(compile_lit_expression expression)
-			(compile_var_expression expression environment)
+		(progn
+		    (if (or (or (numberp expression) (eq 'NIL expression)) (eq 'T expression))
+    			(compile_lit_expression expression)
+    			(compile_var_expression expression environment)
+    		)
 		)
 		
 		; Cas d'une expression à évaluer
@@ -81,12 +83,19 @@
                 ((eq operator 'progn)
                   (compile_let_expression args environment)
                 )
+                ((eq operator 'QUOTE)
+                    (compile_quote_value args environment)
+                )
                 ((= 1 1); Cas par default
                     (compile_call_function operator args environment)
                 )
 			)
 		)
 	)
+)
+
+(defun compile_quote_value (args environment)
+    (cons (list 'MOVE (list ':CONST (car args)) 'R0) NIL)
 )
 
 (defun compile_call_function (operator next environment)
@@ -106,11 +115,6 @@
         (append (list (list 'PUSH (list ':CONST nb_parameter)))
         (append (list (list 'JSR func)))))
     )
-    
-    ;(MOVE (:CONST arg1) R0)
-    ;(PUSH R0)
-    ;(PUSH NP ARGUMENT)
-    ;(JSR FUNC)
 )
 
 (defun compile_known_function (func args environment)
@@ -154,7 +158,7 @@
 
 (defun compile_var_expression (name environment)
 	(if (null environment)
-		(error 'on-var-never-initialized :message (format t "~a~% doesn't exist" name)) ; La variable n'a pas été trouvé dans l'environment
+	    (error 'on-var-never-initialized :message (format t "~a~% doesn't exist" name)) ; La variable n'a pas été trouvé dans l'environment
 		(let (
 				(current (car environment))
 			)
@@ -706,13 +710,6 @@
 )
 
 (write (compile_lisp '(
-    (defun test_func ())
-    
-    (defun f (x)
-        (if (= x 0)
-            0
-            (- x 1)
-        )
-    )
-    (write (list 5))
+    (write (list 'Test 1 T))
+    ;setf cas particulier
 )))
