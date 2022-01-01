@@ -319,7 +319,39 @@
         (vm_run_push vm_name '(PC));on empile PC
         (vm_run_push vm_name (cons(list ':CONST sp_temp) NIL));on empile SP
         
-        (setf (get vm_name 'PC)(vm_get_adresse_label vm_name (vm_get_address vm_name (car arguments))))
+        (if (map_get (get vm_name 'symbols) (car arguments) )
+            (setf (get vm_name 'PC)(vm_get_adresse_label vm_name (vm_get_address vm_name (car arguments))))
+            (vm_run_lisp_function (car arguments) vm_name arguments)
+        )
+    )
+)
+
+(defun vm_run_lisp_function (func vm_name arguments)
+    (vm_run_move vm_name (list 'FP 'R0))
+    (vm_run_load vm_name (list 'R0 'R0))
+    
+    (let 
+        (
+            (nb_arguments (vm_get_value vm_name 'R0))
+        )
+        (vm_run_move vm_name (list ':CONST (apply func  (list (get_argument_func_lisp vm_name nb_arguments))) 'R0))
+        (vm_run_rtn vm_name arguments)
+    )
+)
+
+(defun get_argument_func_lisp (vm_name nb_arguments)
+    (if (= nb_arguments 0)
+        '()
+        (progn 
+            (vm_run_move vm_name (list 'FP 'R0))
+            (vm_run_move vm_name (list (list':CONST nb_arguments) 'R1))
+            (vm_run_sub vm_name (list 'R0 'R1))
+            (vm_run_move vm_name (list 'R1 'R0))
+            (vm_run_load vm_name (list 'R0 'R0))
+            (append (list (vm_get_value vm_name 'R0))
+            (get_argument_func_lisp vm_name (- nb_arguments 1)))
+
+        )
     )
 )
 
@@ -427,63 +459,28 @@
     (+ (map_get (get vm_name 'symbols) label) (get vm_name 'CP))
 )
 
+(defun is_known_function (operator array)
+    (if (null array)
+        NIL
+        (if (eq operator (nth 1 (car array)))
+            T
+            (is_known_function operator (cdr array))
+        )
+    )
+)
+
 (vm_create 'Roger 1000)
 (vm_load 'Roger '(
-<<<<<<< HEAD
-	(JMP SKIP_FUNCTION0)
-	(LABEL F)
-		(MOVE FP R1)
-		(ADD (:CONST -1) R1)
-		(LOAD R1 R0)
-		(PUSH R0) ; x
-		
-		(MOVE (:CONST 5) R0)
-		(PUSH R0) ; 5
-		 
-		(POP R0)
-		(POP R1) 
-		(ADD R1 R0) 
-		(PUSH R0) ; x + 5 = a
-		
-		(MOVE (:CONST 2) R0)
-		(PUSH R0) ; 2 = b
-		
-		(MOVE FP R1)
-		(ADD (:CONST 4) R1)
- 		(LOAD R1 R0)
- 		(PUSH R0) ; a
- 		
- 		(MOVE FP R1)
- 		(ADD (:CONST 5) R1)
- 		(LOAD R1 R0)
- 		(PUSH R0) ; b
- 		
- 		(POP R0)
- 		(POP R1)
- 		(MUL R1 R0) ; a * b
- 		
- 		(POP R2)
- 		(POP R2) ; clear stack
- 		
- 		(RTN)
- 	(LABEL SKIP_FUNCTION0)
- 	(PUSH (:CONST 1))
- 	(PUSH (:CONST 1))
- 	(JSR F)
-=======
-
-   (LABEL FUNC) (MOVE (:CONST 5) R0) (PUSH R0) (MOVE (:CONST 2) R0) (POP R1)
- (CMP R1 R0) (JEQ CMP_EQUAL_TRUE0) (MOVE (:CONST NIL) R0) (JMP CMP_EQUAL_END0)
- (LABEL CMP_EQUAL_TRUE0) (MOVE (:CONST T) R0) (LABEL CMP_EQUAL_END0) (TEST R0)
- (JTRUE IF_TRUE1) (MOVE (:CONST 5) R0) (PUSH R0) (MOVE (:CONST 5) R0) (POP R1)
- (CMP R1 R0) (JEQ CMP_EQUAL_TRUE1) (MOVE (:CONST NIL) R0) (JMP CMP_EQUAL_END1)
- (LABEL CMP_EQUAL_TRUE1) (MOVE (:CONST T) R0) (LABEL CMP_EQUAL_END1) (TEST R0)
- (JTRUE IF_TRUE0) (MOVE (:CONST NIL) R0) (JMP IF_END0) (LABEL IF_TRUE0)
- (MOVE (:CONST 2) R0) (PUSH R0) (MOVE (:CONST 3) R0) (PUSH R0) (POP R0)
- (POP R1) (ADD R1 R0) (JMP IF_END0) (LABEL IF_END0) (JMP IF_END1)
- (LABEL IF_TRUE1) (MOVE (:CONST 1) R0) (JMP IF_END1) (LABEL IF_END1) (RTN) (JSR FUNC) (WRITE R0)
- 
->>>>>>> 81d72d1e93f950ee4958d46655b1aac133155e7b
+(JMP SKIP_FUNCTION0) (LABEL TEST_FUNC) (RTN) (LABEL SKIP_FUNCTION0)
+ (JMP SKIP_FUNCTION1) (LABEL F) (MOVE FP R1) (ADD (:CONST -1) R1) (LOAD R1 R0)
+ (PUSH R0) (MOVE (:CONST 0) R0) (POP R1) (CMP R1 R0) (JEQ CMP_EQUAL_TRUE0)
+ (MOVE (:CONST NIL) R0) (JMP CMP_EQUAL_END0) (LABEL CMP_EQUAL_TRUE0)
+ (MOVE (:CONST T) R0) (LABEL CMP_EQUAL_END0) (TEST R0) (JTRUE IF_TRUE0)
+ (MOVE FP R1) (ADD (:CONST -1) R1) (LOAD R1 R0) (PUSH R0) (MOVE (:CONST 1) R0)
+ (PUSH R0) (POP R0) (POP R1) (SUB R1 R0) (JMP IF_END0) (LABEL IF_TRUE0)
+ (MOVE (:CONST 0) R0) (JMP IF_END0) (LABEL IF_END0) (RTN)
+ (LABEL SKIP_FUNCTION1) (MOVE (:CONST 5) R0) (PUSH R0) (PUSH (:CONST 1))
+ (JSR LIST) (PUSH R0) (PUSH (:CONST 1)) (JSR WRITE)
 ))
 ;(vm_run 'Roger)
 (write (vm_run 'Roger))
