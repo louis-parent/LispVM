@@ -83,6 +83,9 @@
                 ((eq operator 'progn)
                   (compile_let_expression args environment)
                 )
+                ((eq operator 'setf)
+                    (compile_setf_expression args environment)
+                )
                 ((eq operator 'QUOTE)
                     (compile_quote_value args environment)
                 )
@@ -92,6 +95,22 @@
 			)
 		)
 	)
+)
+
+(defun compile_setf_expression (args environment)
+    (append 
+        (list (list 'PUSH (list ':CONST (car args))))
+        (append 
+            (compile_lisp_expression (cadr args) environment)
+            (append 
+                (list (list 'PUSH 'R0))
+                (append 
+                    (list (list 'PUSH (list ':CONST 2)))
+                    (list (list 'JSR 'setf))
+                )
+            )
+        )
+    )
 )
 
 (defun compile_quote_value (args environment)
@@ -710,6 +729,7 @@
 )
 
 (write (compile_lisp '(
-    (write (list 'Test 1 T))
+    (setf (get 'test 'test1) 12)
+    (write (get 'test 'test1))
     ;setf cas particulier
 )))

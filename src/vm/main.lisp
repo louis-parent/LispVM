@@ -335,9 +335,24 @@
             (nb_arguments (vm_get_value vm_name 'R0))
         )
         
-        (vm_run_move vm_name (list (list ':CONST (apply func (get_argument_func_lisp vm_name nb_arguments))) 'R0))
+        (vm_run_move vm_name 
+            (list 
+                (list 
+                    ':CONST 
+                    ( if (eq func 'setf)
+                        (call-setf (car (get_argument_func_lisp vm_name nb_arguments)) (cadr (get_argument_func_lisp vm_name nb_arguments)))
+                        (apply func (get_argument_func_lisp vm_name nb_arguments))
+                    )
+                ) 'R0
+            )
+        )
+        
         (vm_run_rtn vm_name arguments)
     )
+)
+
+(defun call-setf (key value) 
+    (eval `(setf ,key ,value))
 )
 
 (defun get_argument_func_lisp (vm_name nb_arguments)
@@ -473,9 +488,10 @@
 
 (vm_create 'Roger 1000)
 (vm_load 'Roger '(
-    (MOVE (:CONST TEST) R0) (PUSH R0) (MOVE (:CONST 1) R0) (PUSH R0)
-    (MOVE (:CONST T) R0) (PUSH R0) (PUSH (:CONST 3)) (JSR LIST) (PUSH R0)
-    (PUSH (:CONST 1)) (JSR WRITE)
+    (PUSH (:CONST (GET 'TEST 'TEST1))) (MOVE (:CONST 12) R0) (PUSH R0)
+ (PUSH (:CONST 2)) (JSR SETF) (MOVE (:CONST TEST) R0) (PUSH R0)
+ (MOVE (:CONST TEST1) R0) (PUSH R0) (PUSH (:CONST 2)) (JSR GET) (PUSH R0)
+ (PUSH (:CONST 1)) (JSR WRITE)
 ))
-;(vm_run 'Roger)
+
 (vm_run 'Roger)
