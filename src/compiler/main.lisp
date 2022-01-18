@@ -729,5 +729,5 @@
 )
 
 (compile_lisp '(
-	
+	(write "Hello World !")
 ))
