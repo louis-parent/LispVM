@@ -20,10 +20,10 @@
 	(if (atom expression)
 		; Cas d'un littéral ou d'un symbole
 		(progn
-		    (if (or (or (numberp expression) (eq 'NIL expression)) (eq 'T expression))
-    			(compile_lit_expression expression)
-    			(compile_var_expression expression environment)
-    		)
+			(if (or (or (or (numberp expression) (eq 'NIL expression)) (eq 'T expression)) (stringp expression))
+				(compile_lit_expression expression)
+				(compile_var_expression expression environment)
+			)
 		)
 		
 		; Cas d'une expression à évaluer
@@ -48,127 +48,127 @@
 				  (compile_defun_expression args environment)
 				)
 				((eq operator 'cond)
-				    (compile_cond_expression args environment)
+					(compile_cond_expression args environment)
 				)
 				((eq operator 'if)
 					(compile_if_expression args environment)
 				)
 				((eq operator '=)
-                    (compile_equal_expression args environment)
-                )
-                ((eq operator '/=)
-                    (compile_not_equal_expression args environment)
-                )
-                ((eq operator '>)
-                    (compile_greater_expression args environment)
-                )
-                ((eq operator '>=)
-                    (compile_greater_equal_expression args environment)
-                )
-                ((eq operator '<)
-                    (compile_lower_expression args environment)
-                )
-                ((eq operator '<=)
-                    (compile_lower_equal_expression args environment)
-                )
-                ((eq operator 'null)
-                    (compile_null_expression args environment)
-                )
-                ((eq operator 'not)
-                    (compile_not_expression args environment)
-                )
-                ((eq operator 'let)
-                  (compile_let_expression args environment)
-                )
-                ((eq operator 'progn)
-                  (compile_progn_expression args environment)
-                )
-                ((eq operator 'setf)
-                    (compile_setf_expression args environment)
-                )
-                ((eq operator 'QUOTE)
-                    (compile_quote_value args environment)
-                )
-                ((= 1 1); Cas par default
-                    (compile_call_function operator args environment)
-                )
+					(compile_equal_expression args environment)
+				)
+				((eq operator '/=)
+					(compile_not_equal_expression args environment)
+				)
+				((eq operator '>)
+					(compile_greater_expression args environment)
+				)
+				((eq operator '>=)
+					(compile_greater_equal_expression args environment)
+				)
+				((eq operator '<)
+					(compile_lower_expression args environment)
+				)
+				((eq operator '<=)
+					(compile_lower_equal_expression args environment)
+				)
+				((eq operator 'null)
+					(compile_null_expression args environment)
+				)
+				((eq operator 'not)
+					(compile_not_expression args environment)
+				)
+				((eq operator 'let)
+				  (compile_let_expression args environment)
+				)
+				((eq operator 'progn)
+				  (compile_progn_expression args environment)
+				)
+				((eq operator 'setf)
+					(compile_setf_expression args environment)
+				)
+				((eq operator 'QUOTE)
+					(compile_quote_value args environment)
+				)
+				((= 1 1); Cas par default
+					(compile_call_function operator args environment)
+				)
 			)
 		)
 	)
 )
 
 (defun compile_setf_expression (args environment)
-    (append 
-        (list (list 'PUSH (list ':CONST (car args))))
-        (append 
-            (compile_lisp_expression (cadr args) environment)
-            (append 
-                (list (list 'PUSH 'R0))
-                (append 
-                    (list (list 'PUSH (list ':CONST 2)))
-                    (list (list 'JSR 'setf))
-                )
-            )
-        )
-    )
+	(append 
+		(list (list 'PUSH (list ':CONST (car args))))
+		(append 
+			(compile_lisp_expression (cadr args) environment)
+			(append 
+				(list (list 'PUSH 'R0))
+				(append 
+					(list (list 'PUSH (list ':CONST 2)))
+					(list (list 'JSR 'setf))
+				)
+			)
+		)
+	)
 )
 
 (defun compile_quote_value (args environment)
-    (cons (list 'MOVE (list ':CONST (car args)) 'R0) NIL)
+	(cons (list 'MOVE (list ':CONST (car args)) 'R0) NIL)
 )
 
 (defun compile_call_function (operator next environment)
-    (if (is_known_function operator (get '__LISP_COMPILER__ '__GLOBALS__))
-        (compile_known_function operator next environment)
-        (compile_lisp_fonction operator next environment)
-    )
+	(if (is_known_function operator (get '__LISP_COMPILER__ '__GLOBALS__))
+		(compile_known_function operator next environment)
+		(compile_lisp_fonction operator next environment)
+	)
 )
 
 (defun compile_lisp_fonction (func next environment)
-    (let 
-        (
-            (nb_parameter (size_array next))
-        )
-        
-        (append (compile_args_call_function_lisp next environment)
-        (append (list (list 'PUSH (list ':CONST nb_parameter)))
-        (append (list (list 'JSR func)))))
-    )
+	(let 
+		(
+			(nb_parameter (size_array next))
+		)
+		
+		(append (compile_args_call_function_lisp next environment)
+		(append (list (list 'PUSH (list ':CONST nb_parameter)))
+		(append (list (list 'JSR func)))))
+	)
 )
 
 (defun compile_known_function (func args environment)
-    (let 
-        (
-            (nb_parameter (size_array args))
-            
-        )
-        
-        (append (compile_args_call_function args environment)
-        (append (list (list 'PUSH (list ':CONST nb_parameter)))
-        (append (list (list 'JSR func)))))
-    )
+	(let 
+		(
+			(nb_parameter (size_array args))
+			
+		)
+		
+		(append (compile_args_call_function args environment)
+		(append (list (list 'PUSH (list ':CONST nb_parameter)))
+		(append (list (list 'JSR func)))))
+	)
 )
 
 (defun compile_args_call_function (args environment)
-    (if (null args)
-        '()
-        (progn
-            (append (compile_lisp_expressions args environment)
-            (append (list (list 'PUSH 'R0))
-            (compile_args_call_function (cdr args) environment)))
-        )
-    )
+	(if (null args)
+		'()
+		(progn
+			(append (compile_lisp_expressions args environment)
+			(append (list (list 'PUSH 'R0))
+			(compile_args_call_function (cdr args) environment)))
+		)
+	)
 )
 
 (defun compile_args_call_function_lisp (args environment)
-    (if (null args)
-        '()
-        (progn
-            (append (compile_lisp_expression (car args) environment)
-            (append (list (list 'PUSH 'R0))
-            (compile_args_call_function_lisp (cdr args) environment)))
-        )
-    )
+	(if (null args)
+		'()
+		(progn
+			(append (compile_lisp_expression (car args) environment)
+			(append (list (list 'PUSH 'R0))
+			(compile_args_call_function_lisp (cdr args) environment)))
+		)
+	)
 )
 
 (defun compile_lit_expression (value)
@@ -177,7 +177,7 @@
 
 (defun compile_var_expression (name environment)
 	(if (null environment)
-	    (error 'on-var-never-initialized :message (format t "~a~% doesn't exist" name)) ; La variable n'a pas été trouvé dans l'environment
+		(error 'on-var-never-initialized :message (format t "~a~% doesn't exist" name)) ; La variable n'a pas été trouvé dans l'environment
 		(let (
 				(current (car environment))
 			)
@@ -274,7 +274,7 @@
 			(name (car args))
 			(params (cadr args))
 			(body (cddr args))
-            (label_skip (create_label "skip_function"))
+			(label_skip (create_label "skip_function"))
 		)
 		(add_function_to_globals name (create_function_params_offset_list params))
 		(push_new_frame_context)
@@ -323,283 +323,283 @@
 )
 
 (defun compile_cond_expression (next environment)
-    (let 
-        (
-            (body (car (comparison_cond_to_if next environment)))
-        )
-    
-        (compile_lisp_expression body environment)
-    )
+	(let 
+		(
+			(body (car (comparison_cond_to_if next environment)))
+		)
+	
+		(compile_lisp_expression body environment)
+	)
 )
 
 (defun comparison_cond_to_if (args environment)
-    (let
-        (
-            (next_conds (cdr args))
-            (first_cond (caar args))
-            (first_do (cadar args))
-        )
-        
-        (if (null args)
-            (list (list));NIL avec le append
-            (list
-                (append
-                    (list
-                        'if
-                        first_cond
-                        first_do
-                    )
-                    (comparison_cond_to_if next_conds environment)
-                )
-            )
-        )
-        
-    )
-    
+	(let
+		(
+			(next_conds (cdr args))
+			(first_cond (caar args))
+			(first_do (cadar args))
+		)
+		
+		(if (null args)
+			(list (list));NIL avec le append
+			(list
+				(append
+					(list
+						'if
+						first_cond
+						first_do
+					)
+					(comparison_cond_to_if next_conds environment)
+				)
+			)
+		)
+		
+	)
+	
 )
 
 (defun compile_if_expression (next environment)
-    (let 
-        (
-            (arg (compile_lisp_expression (car next) environment))
-            (body_true (compile_lisp_expression (cadr next) environment))
-            (body_false (compile_lisp_expression (caddr next) environment))
-            (label_true (create_label "if_true"))
-            (label_end (create_label "if_end"))
-        )
-        
-        (append
-            (append arg
-            (append (list (list 'TEST 'R0))
-            (append (list (list 'JTRUE label_true))
-            (append body_false
-            (append (list (list 'JMP label_end))
-            (append (list (list 'LABEL label_true))
-            (append body_true
-            (append (list (list 'JMP label_end))
-            (append (list (list 'LABEL label_end)))))))))))
-        )
-    )
+	(let 
+		(
+			(arg (compile_lisp_expression (car next) environment))
+			(body_true (compile_lisp_expression (cadr next) environment))
+			(body_false (compile_lisp_expression (caddr next) environment))
+			(label_true (create_label "if_true"))
+			(label_end (create_label "if_end"))
+		)
+		
+		(append
+			(append arg
+			(append (list (list 'TEST 'R0))
+			(append (list (list 'JTRUE label_true))
+			(append body_false
+			(append (list (list 'JMP label_end))
+			(append (list (list 'LABEL label_true))
+			(append body_true
+			(append (list (list 'JMP label_end))
+			(append (list (list 'LABEL label_end)))))))))))
+		)
+	)
 )
 
 (defun compile_equal_expression (args environment)
-    (let 
-        (
-            (arg1 (compile_lisp_expression (car args) environment))
-            (arg2 (compile_lisp_expression (cadr args) environment))
-            (label_true (create_label "cmp_equal_true"))
-            (label_end (create_label "cmp_equal_end"))
-        )
-        
-        (append
-            (append arg1
-            (append (list (create_push_instruction 'R0))
-            (append arg2)
-            (append (list (create_pop_instruction 'R1))
-            (append (list (list 'CMP 'R1 'R0))
-            (append (list (list 'JEQ label_true))
-            (append (list (list 'MOVE '(:CONST NIL) 'R0))
-            (append (list (list 'JMP label_end))
-            (append (list (list 'LABEL label_true))
-            (append (list (list 'MOVE '(:CONST T) 'R0))
-            (append (list (list 'LABEL label_end))))))))))))
-        )
-    )
+	(let 
+		(
+			(arg1 (compile_lisp_expression (car args) environment))
+			(arg2 (compile_lisp_expression (cadr args) environment))
+			(label_true (create_label "cmp_equal_true"))
+			(label_end (create_label "cmp_equal_end"))
+		)
+		
+		(append
+			(append arg1
+			(append (list (create_push_instruction 'R0))
+			(append arg2)
+			(append (list (create_pop_instruction 'R1))
+			(append (list (list 'CMP 'R1 'R0))
+			(append (list (list 'JEQ label_true))
+			(append (list (list 'MOVE '(:CONST NIL) 'R0))
+			(append (list (list 'JMP label_end))
+			(append (list (list 'LABEL label_true))
+			(append (list (list 'MOVE '(:CONST T) 'R0))
+			(append (list (list 'LABEL label_end))))))))))))
+		)
+	)
 )
 
 (defun compile_not_equal_expression (args environment)
-    (let 
-        (
-            (arg1 (compile_lisp_expression (car args) environment))
-            (arg2 (compile_lisp_expression (cadr args) environment))
-            (label_true (create_label "cmp_not_equal_true"))
-            (label_end (create_label "cmp_not_equal_end"))
-        )
-        
-        (append
-            (append arg1
-            (append (list (create_push_instruction 'R0))
-            (append arg2)
-            (append (list (create_pop_instruction 'R1))
-            (append (list (list 'CMP 'R1 'R0))
-            (append (list (list 'JNE label_true))
-            (append (list (list 'MOVE '(:CONST NIL) 'R0))
-            (append (list (list 'JMP label_end))
-            (append (list (list 'LABEL label_true))
-            (append (list (list 'MOVE '(:CONST T) 'R0))
-            (append (list (list 'LABEL label_end))))))))))))
-        )
-    )
+	(let 
+		(
+			(arg1 (compile_lisp_expression (car args) environment))
+			(arg2 (compile_lisp_expression (cadr args) environment))
+			(label_true (create_label "cmp_not_equal_true"))
+			(label_end (create_label "cmp_not_equal_end"))
+		)
+		
+		(append
+			(append arg1
+			(append (list (create_push_instruction 'R0))
+			(append arg2)
+			(append (list (create_pop_instruction 'R1))
+			(append (list (list 'CMP 'R1 'R0))
+			(append (list (list 'JNE label_true))
+			(append (list (list 'MOVE '(:CONST NIL) 'R0))
+			(append (list (list 'JMP label_end))
+			(append (list (list 'LABEL label_true))
+			(append (list (list 'MOVE '(:CONST T) 'R0))
+			(append (list (list 'LABEL label_end))))))))))))
+		)
+	)
 )
 
 (defun compile_greater_expression (args environment)
-    (let 
-        (
-            (arg1 (compile_lisp_expression (car args) environment))
-            (arg2 (compile_lisp_expression (cadr args) environment))
-            (label_true (create_label "cmp_greater_true"))
-            (label_end (create_label "cmp_greater_end"))
-        )
-        
-        (append
-            (append arg1
-            (append (list (create_push_instruction 'R0))
-            (append arg2)
-            (append (list (create_pop_instruction 'R1))
-            (append (list (list 'CMP 'R1 'R0))
-            (append (list (list 'JGT label_true))
-            (append (list (list 'MOVE '(:CONST NIL) 'R0))
-            (append (list (list 'JMP label_end))
-            (append (list (list 'LABEL label_true))
-            (append (list (list 'MOVE '(:CONST T) 'R0))
-            (append (list (list 'LABEL label_end))))))))))))
-        )
-    )
+	(let 
+		(
+			(arg1 (compile_lisp_expression (car args) environment))
+			(arg2 (compile_lisp_expression (cadr args) environment))
+			(label_true (create_label "cmp_greater_true"))
+			(label_end (create_label "cmp_greater_end"))
+		)
+		
+		(append
+			(append arg1
+			(append (list (create_push_instruction 'R0))
+			(append arg2)
+			(append (list (create_pop_instruction 'R1))
+			(append (list (list 'CMP 'R1 'R0))
+			(append (list (list 'JGT label_true))
+			(append (list (list 'MOVE '(:CONST NIL) 'R0))
+			(append (list (list 'JMP label_end))
+			(append (list (list 'LABEL label_true))
+			(append (list (list 'MOVE '(:CONST T) 'R0))
+			(append (list (list 'LABEL label_end))))))))))))
+		)
+	)
 )
 
 (defun compile_greater_equal_expression (args environment)
-    (let 
-        (
-            (arg1 (compile_lisp_expression (car args) environment))
-            (arg2 (compile_lisp_expression (cadr args) environment))
-            (label_true (create_label "cmp_greater_equal_true"))
-            (label_end (create_label "cmp_greater_equal_end"))
-        )
-        
-        (append
-            (append arg1
-            (append (list (create_push_instruction 'R0))
-            (append arg2)
-            (append (list (create_pop_instruction 'R1))
-            (append (list (list 'CMP 'R1 'R0))
-            (append (list (list 'JGT label_true))
-            (append (list (list 'MOVE '(:CONST NIL) 'R0))
-            (append (list (list 'JMP label_end))
-            (append (list (list 'LABEL label_true))
-            (append (list (list 'MOVE '(:CONST T) 'R0))
-            (append (list (list 'LABEL label_end))))))))))))
-        )
-    )
+	(let 
+		(
+			(arg1 (compile_lisp_expression (car args) environment))
+			(arg2 (compile_lisp_expression (cadr args) environment))
+			(label_true (create_label "cmp_greater_equal_true"))
+			(label_end (create_label "cmp_greater_equal_end"))
+		)
+		
+		(append
+			(append arg1
+			(append (list (create_push_instruction 'R0))
+			(append arg2)
+			(append (list (create_pop_instruction 'R1))
+			(append (list (list 'CMP 'R1 'R0))
+			(append (list (list 'JGT label_true))
+			(append (list (list 'MOVE '(:CONST NIL) 'R0))
+			(append (list (list 'JMP label_end))
+			(append (list (list 'LABEL label_true))
+			(append (list (list 'MOVE '(:CONST T) 'R0))
+			(append (list (list 'LABEL label_end))))))))))))
+		)
+	)
 )
 
 (defun compile_lower_expression (args environment)
-    (let 
-        (
-            (arg1 (compile_lisp_expression (car args) environment))
-            (arg2 (compile_lisp_expression (cadr args) environment))
-            (label_true (create_label "cmp_lower_true"))
-            (label_end (create_label "cmp_lower_end"))
-        )
-        
-        (append
-            (append arg1
-            (append (list (create_push_instruction 'R0))
-            (append arg2)
-            (append (list (create_pop_instruction 'R1))
-            (append (list (list 'CMP 'R1 'R0))
-            (append (list (list 'JLT label_true))
-            (append (list (list 'MOVE '(:CONST NIL) 'R0))
-            (append (list (list 'JMP label_end))
-            (append (list (list 'LABEL label_true))
-            (append (list (list 'MOVE '(:CONST T) 'R0))
-            (append (list (list 'LABEL label_end))))))))))))
-        )
-    )
+	(let 
+		(
+			(arg1 (compile_lisp_expression (car args) environment))
+			(arg2 (compile_lisp_expression (cadr args) environment))
+			(label_true (create_label "cmp_lower_true"))
+			(label_end (create_label "cmp_lower_end"))
+		)
+		
+		(append
+			(append arg1
+			(append (list (create_push_instruction 'R0))
+			(append arg2)
+			(append (list (create_pop_instruction 'R1))
+			(append (list (list 'CMP 'R1 'R0))
+			(append (list (list 'JLT label_true))
+			(append (list (list 'MOVE '(:CONST NIL) 'R0))
+			(append (list (list 'JMP label_end))
+			(append (list (list 'LABEL label_true))
+			(append (list (list 'MOVE '(:CONST T) 'R0))
+			(append (list (list 'LABEL label_end))))))))))))
+		)
+	)
 )
 
 (defun compile_lower_equal_expression (args environment)
-    (let 
-        (
-            (arg1 (compile_lisp_expression (car args) environment))
-            (arg2 (compile_lisp_expression (cadr args) environment))
-            (label_true (create_label "cmp_lower_equal_true"))
-            (label_end (create_label "cmp_lower_equal_end"))
-        )
-        
-        (append
-            (append arg1
-            (append (list (create_push_instruction 'R0))
-            (append arg2)
-            (append (list (create_pop_instruction 'R1))
-            (append (list (list 'CMP 'R1 'R0))
-            (append (list (list 'JLE label_true))
-            (append (list (list 'MOVE '(:CONST NIL) 'R0))
-            (append (list (list 'JMP label_end))
-            (append (list (list 'LABEL label_true))
-            (append (list (list 'MOVE '(:CONST T) 'R0))
-            (append (list (list 'LABEL label_end))))))))))))
-        )
-    )
+	(let 
+		(
+			(arg1 (compile_lisp_expression (car args) environment))
+			(arg2 (compile_lisp_expression (cadr args) environment))
+			(label_true (create_label "cmp_lower_equal_true"))
+			(label_end (create_label "cmp_lower_equal_end"))
+		)
+		
+		(append
+			(append arg1
+			(append (list (create_push_instruction 'R0))
+			(append arg2)
+			(append (list (create_pop_instruction 'R1))
+			(append (list (list 'CMP 'R1 'R0))
+			(append (list (list 'JLE label_true))
+			(append (list (list 'MOVE '(:CONST NIL) 'R0))
+			(append (list (list 'JMP label_end))
+			(append (list (list 'LABEL label_true))
+			(append (list (list 'MOVE '(:CONST T) 'R0))
+			(append (list (list 'LABEL label_end))))))))))))
+		)
+	)
 )
 
 (defun compile_null_expression (args environment)
-    (let 
-        (
-            (arg (compile_lisp_expression (car args) environment))
-            (label_true (create_label "cmp_null_true"))
-            (label_end (create_label "cmp_null_end"))
-        )
-        
-        (append
-            (append arg
-            (append (list (list 'TEST 'R0))
-            (append (list (list 'JNIL label_true))
-            (append (list (list 'MOVE '(:CONST NIL) 'R0))
-            (append (list (list 'JMP label_end))
-            (append (list (list 'LABEL label_true))
-            (append (list (list 'MOVE '(:CONST T) 'R0))
-            (append (list (list 'LABEL label_end))))))))))
-        )
-    )
+	(let 
+		(
+			(arg (compile_lisp_expression (car args) environment))
+			(label_true (create_label "cmp_null_true"))
+			(label_end (create_label "cmp_null_end"))
+		)
+		
+		(append
+			(append arg
+			(append (list (list 'TEST 'R0))
+			(append (list (list 'JNIL label_true))
+			(append (list (list 'MOVE '(:CONST NIL) 'R0))
+			(append (list (list 'JMP label_end))
+			(append (list (list 'LABEL label_true))
+			(append (list (list 'MOVE '(:CONST T) 'R0))
+			(append (list (list 'LABEL label_end))))))))))
+		)
+	)
 )
 
 (defun compile_not_expression (args environment)
-    (let 
-        (
-            (arg (compile_lisp_expression (car args) environment))
-            (label_true (create_label "cmp_null_true"))
-            (label_end (create_label "cmp_null_end"))
-        )
-        
-        (append
-            (append arg
-            (append (list (list 'TEST 'R0 ))
-            (append (list (list 'JTRUE label_true))
-            (append (list (list 'MOVE '(:CONST T) 'R0))
-            (append (list (list 'JMP label_end))
-            (append (list (list 'LABEL label_true))
-            (append (list (list 'MOVE '(:CONST NIL) 'R0))
-            (append (list (list 'LABEL label_end))))))))))
-        )
-    )
+	(let 
+		(
+			(arg (compile_lisp_expression (car args) environment))
+			(label_true (create_label "cmp_null_true"))
+			(label_end (create_label "cmp_null_end"))
+		)
+		
+		(append
+			(append arg
+			(append (list (list 'TEST 'R0 ))
+			(append (list (list 'JTRUE label_true))
+			(append (list (list 'MOVE '(:CONST T) 'R0))
+			(append (list (list 'JMP label_end))
+			(append (list (list 'LABEL label_true))
+			(append (list (list 'MOVE '(:CONST NIL) 'R0))
+			(append (list (list 'LABEL label_end))))))))))
+		)
+	)
 )
 
 (defun create_label (context)
-    (make_label context 0)
+	(make_label context 0)
 )
 
 (defun make_label (context value)
-    (if (exist (read-from-string (concatenate 'string context (write-to-string value))) (get '__LISP_COMPILER__ '__LABELS__))
-        (make_label context (+ value 1))
-        (progn
-            (setf (get '__LISP_COMPILER__ '__LABELS__) (append (get '__LISP_COMPILER__ '__LABELS__) (list (read-from-string (concatenate 'string context (write-to-string value))))))
-            (read-from-string (concatenate 'string context (write-to-string value)))
-        )
-        
-    )
+	(if (exist (read-from-string (concatenate 'string context (write-to-string value))) (get '__LISP_COMPILER__ '__LABELS__))
+		(make_label context (+ value 1))
+		(progn
+			(setf (get '__LISP_COMPILER__ '__LABELS__) (append (get '__LISP_COMPILER__ '__LABELS__) (list (read-from-string (concatenate 'string context (write-to-string value))))))
+			(read-from-string (concatenate 'string context (write-to-string value)))
+		)
+		
+	)
 )
 
 (defun exist (value array)
-    (if (null array)
-        NIL
-        (if (atom (car array))
-            (if (eq value (car array))
-                T
-                (exist value (cdr array))
-            )
-            NIL
-        )
-    )
+	(if (null array)
+		NIL
+		(if (atom (car array))
+			(if (eq value (car array))
+				T
+				(exist value (cdr array))
+			)
+			NIL
+		)
+	)
 )
 
 (defun compile_let_expression (args environment)
@@ -712,24 +712,22 @@
 )
 
 (defun size_array (array)
-    (if (null array)
-        0
-        (+ (size_array (cdr array)) 1)
-    )
+	(if (null array)
+		0
+		(+ (size_array (cdr array)) 1)
+	)
 )
 
 (defun is_known_function (operator array)
-    (if (null array)
-        NIL
-        (if (eq operator (nth 1 (car array)))
-            T
-            (is_known_function operator (cdr array))
-        )
-    )
+	(if (null array)
+		NIL
+		(if (eq operator (nth 1 (car array)))
+			T
+			(is_known_function operator (cdr array))
+		)
+	)
 )
 
-(write (compile_lisp '(
-    (setf (get 'test 'test1) 12)
-    (write (get 'test 'test1))
-    ;setf cas particulier
-)))
+(compile_lisp '(
+	
+))
