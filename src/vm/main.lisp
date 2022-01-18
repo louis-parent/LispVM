@@ -476,22 +476,12 @@
     (+ (map_get (get vm_name 'symbols) label) (get vm_name 'CP))
 )
 
-(defun is_known_function (operator array)
-    (if (null array)
-        NIL
-        (if (eq operator (nth 1 (car array)))
-            T
-            (is_known_function operator (cdr array))
-        )
-    )
-)
-
 (vm_create 'Roger 1000)
 (vm_load 'Roger '(
-    (PUSH (:CONST (GET 'TEST 'TEST1))) (MOVE (:CONST 12) R0) (PUSH R0)
- (PUSH (:CONST 2)) (JSR SETF) (MOVE (:CONST TEST) R0) (PUSH R0)
- (MOVE (:CONST TEST1) R0) (PUSH R0) (PUSH (:CONST 2)) (JSR GET) (PUSH R0)
- (PUSH (:CONST 1)) (JSR WRITE)
+	(MOVE (:CONST "Hello World !") R0)
+	(PUSH R0)
+	(PUSH (:CONST 1))
+	(JSR WRITE)
 ))
 
 (vm_run 'Roger)
