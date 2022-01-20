@@ -4,7 +4,7 @@
 
 ;remplacer setf pour ne pas avoir a le compiler TODO
 (defun vm_create (vm_name size_memory)
-    (setf (get vm_name 'memory) (make_array size_memory))
+    (setf (get vm_name 'memory) (make-list size_memory))
     (setf (get vm_name 'PC) (* size_memory 0.9))
     (setf (get vm_name 'CP) (* size_memory 0.9))
     (setf (get vm_name 'BP) 0)
@@ -28,7 +28,7 @@
     (setf 
         (get vm_name 'symbols) 
         (append 
-            (get vm_name 'symbols) 
+            (get vm_name 'symbols)
             (vm_load_symbols vm_name (sublist (get vm_name 'memory) (get vm_name 'CP)) 0)
         )
     );création de la liste des symboles présents
@@ -67,14 +67,17 @@
     )
 )
 
-(defun array_set (l index value)
-    (if (null l)
-        '()
-        (if (= index 0)
-            (cons value (cdr l))
-            (cons (car l) (array_set (cdr l) (- index 1) value))
-        )
+(defun array_set (l n value)
+    (setq index n)
+    (setq current l)
+    
+    (loop
+    	(when (<= index 0) (return (setf current value)))
+    	(setq index (- index 1))
+    	(setq current (cdr current))
     )
+    
+    l
 )
 
 (defun array_get (l index)
@@ -94,13 +97,6 @@
             (cadar l)
             (map_get (cdr l) key)
         )
-    )
-)
-
-(defun make_array (size)
-    (if (= size 0)
-        '()
-        (cons NIL (make_array (- size 1)))
     )
 )
 
@@ -476,7 +472,7 @@
     (+ (map_get (get vm_name 'symbols) label) (get vm_name 'CP))
 )
 
-(vm_create 'Roger 1000)
+(vm_create 'Roger 10000)
 (vm_load 'Roger '(
 	(MOVE (:CONST "Hello World !") R0)
 	(PUSH R0)
