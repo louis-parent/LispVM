@@ -1,8 +1,5 @@
 ;compteur ordinale(PC), base pointer (BP), frame pointer (FP), stack pointer (SP), finCode (EC), begin code pointer(CP), finStack (ES), r0, r1, r2, stop, inf, equal, sup 
 
-;Penser a implementer le switch case lors de la compilation TODO
-
-;remplacer setf pour ne pas avoir a le compiler TODO
 (defun vm_create (vm_name size_memory)
 	(setf (get vm_name 'memory) (make-list size_memory))
 	(setf (get vm_name 'PC) (floor (* size_memory 0.9)))
@@ -92,7 +89,7 @@
 	)
 )
 
-(defun vm_run (vm_name)
+(defun vm_run (vm_name)	
 	(if (= (get vm_name 'PC) (get vm_name 'EC))
 		(get vm_name 'R0) ;fin de la vm
 		(let ((current_instruction (get_current_instruction vm_name)))
@@ -108,7 +105,7 @@
 )
 
 (defun vm_run_instruction (vm_name current_instruction)
-	(let ((operator (car  current_instruction)) (arguments (cdr current_instruction)) )
+	(let ((operator (car  current_instruction)) (arguments (cdr current_instruction)) )		
 		(cond
 			((eql operator 'LOAD)
 				(vm_run_load vm_name arguments)
