@@ -53,16 +53,17 @@
 )
 
 (defun array_set (l n value)
-	(setq index n)
-	(setq current l)
+	(setq i -1)
 	
-	(loop
-		(when (<= index 0) (return (setf current value)))
-		(setq index (- index 1))
-		(setq current (cdr current))
+	(mapcar
+		(lambda (x)
+			(if (= n (setq i (+ i 1)))
+				 value
+				 x
+			)
+		)
+		l
 	)
-	
-	l
 )
 
 (defun map_get (l key)
@@ -455,5 +456,4 @@
 	(JSR WRITE)
 ))
 
-(write (vm_run 'Roger))
-(write-line "============")
+(vm_run 'Roger)
