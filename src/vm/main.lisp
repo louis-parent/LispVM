@@ -2,43 +2,43 @@
 
 (defun vm_create (vm_name size_memory)
     (setf (get vm_name 'memory) (make-list size_memory))
-    (setf (get vm_name 'PC) (floor (* size_memory 0.9)))
-    (setf (get vm_name 'CP) (floor (* size_memory 0.9)))
-    (setf (get vm_name 'BP) 0)
-    (setf (get vm_name 'FP) 0)
-    (setf (get vm_name 'SP) 0)
-    (setf (get vm_name 'EC) (floor (* size_memory 0.9)))
-    (setf (get vm_name 'ES) (- (get vm_name 'CP) 1))
-    (setf (get vm_name 'R0) 0)
-    (setf (get vm_name 'R1) 0)
-    (setf (get vm_name 'R2) 0)
-    (setf (get vm_name 'STOP) NIL); false
-    (setf (get vm_name 'INF) NIL)
-    (setf (get vm_name 'EQU) NIL)
-    (setf (get vm_name 'SUP) NIL)
-    (setf (get vm_name 'FNIL) NIL)
-    (setf (get vm_name 'symbols) '())
+	(setf (get vm_name 'PC) (floor (* size_memory 0.9)))
+	(setf (get vm_name 'CP) (floor (* size_memory 0.9)))
+	(setf (get vm_name 'BP) 0)
+	(setf (get vm_name 'FP) 0)
+	(setf (get vm_name 'SP) 0)
+	(setf (get vm_name 'EC) (floor (* size_memory 0.9)))
+	(setf (get vm_name 'ES) (- (get vm_name 'CP) 1))
+	(setf (get vm_name 'R0) 0)
+	(setf (get vm_name 'R1) 0)
+	(setf (get vm_name 'R2) 0)
+	(setf (get vm_name 'STOP) NIL); false
+	(setf (get vm_name 'INF) NIL)
+	(setf (get vm_name 'EQU) NIL)
+	(setf (get vm_name 'SUP) NIL)
+	(setf (get vm_name 'FNIL) NIL)
+	(setf (get vm_name 'symbols) '())
 )
 
 (defun vm_load (vm_name instructions)
-    (vm_load_code vm_name instructions)
-    (setf 
-        (get vm_name 'symbols) 
-        (append 
-            (get vm_name 'symbols)
-            (vm_load_symbols vm_name (nthcdr (floor (get vm_name 'CP)) (get vm_name 'memory)) 0)
-        )
-    );création de la liste des symboles présents
+	(vm_load_code vm_name instructions)
+	(setf 
+		(get vm_name 'symbols) 
+		(append 
+			(get vm_name 'symbols)
+			(vm_load_symbols vm_name (nthcdr (floor (get vm_name 'CP)) (get vm_name 'memory)) 0)
+		)
+	);création de la liste des symboles présents
 )
 
 (defun vm_load_symbols (vm_name instructions instruction_index)
-    (if (null instructions )
-        '()
-        (if (eq (caar instructions) 'LABEL)
-            (cons (cons (cadar instructions) (cons instruction_index '()) ) (vm_load_symbols vm_name (cdr instructions) (+ instruction_index 1)))
-            (vm_load_symbols vm_name (cdr instructions) (+ instruction_index 1))
-        )
-    )
+	(if (null instructions )
+		'()
+		(if (eq (caar instructions) 'LABEL)
+			(cons (cons (cadar instructions) (cons instruction_index '()) ) (vm_load_symbols vm_name (cdr instructions) (+ instruction_index 1)))
+			(vm_load_symbols vm_name (cdr instructions) (+ instruction_index 1))
+		)
+	)
 )
 
 (defun vm_load_code (vm_name instructions)
@@ -68,17 +68,17 @@
 )
 
 (defun vm_get_value (vm_name argument)
-    (if (listp argument)
-        (cadr argument)
-        (get vm_name argument)
-    )
+	(if (listp argument)
+		(cadr argument)
+		(get vm_name argument)
+	)
 )
 
 (defun vm_get_address (vm_name argument)
-    (if (listp argument)
-        (get vm_name (cadr argument))
-        argument
-    )
+	(if (listp argument)
+		(get vm_name (cadr argument))
+		argument
+	)
 )
 
 (defun vm_run (vm_name) 
@@ -197,70 +197,70 @@
 )
 
 (defun vm_run_store (vm_name arguments) 
-    (let ( (src (car arguments)) (dest (cadr arguments)) )
-    (setf (get vm_name 'memory) (array_set (get vm_name 'memory) (vm_get_value vm_name dest) (get vm_name src)))
-    )
+	(let ( (src (car arguments)) (dest (cadr arguments)) )
+	(setf (get vm_name 'memory) (array_set (get vm_name 'memory) (vm_get_value vm_name dest) (get vm_name src)))
+	)
 )
 
 (defun vm_run_move (vm_name arguments) 
-    (let ( (src (car arguments)) (dest (cadr arguments)) )
-        (setf (get vm_name dest) (vm_get_value vm_name src))
-    )
+	(let ( (src (car arguments)) (dest (cadr arguments)) )
+		(setf (get vm_name dest) (vm_get_value vm_name src))
+	)
 )
 
 (defun vm_run_add (vm_name arguments)
-    (let ( 
-        (src1 (vm_get_value vm_name (car arguments)))
-        (src2 (get vm_name (cadr arguments)))
-    )
-        (setf (get vm_name (cadr arguments)) (+ src1 src2))
-    )
+	(let ( 
+		(src1 (vm_get_value vm_name (car arguments)))
+		(src2 (get vm_name (cadr arguments)))
+	)
+		(setf (get vm_name (cadr arguments)) (+ src1 src2))
+	)
 )
 
 (defun vm_run_sub (vm_name arguments)
-    (let ( 
-        (src1 (vm_get_value vm_name (car arguments)))
-        (src2 (get vm_name (cadr arguments)))
-    )
-        (setf (get vm_name (cadr arguments)) (- src1 src2))
-    )
+	(let ( 
+		(src1 (vm_get_value vm_name (car arguments)))
+		(src2 (get vm_name (cadr arguments)))
+	)
+		(setf (get vm_name (cadr arguments)) (- src1 src2))
+	)
 )
 
 (defun vm_run_mul (vm_name arguments)
-    (let ( 
-        (src1 (vm_get_value vm_name (car arguments)))
-        (src2 (get vm_name (cadr arguments)))
-    )
-        (setf (get vm_name (cadr arguments)) (* src1 src2))
-    )
+	(let ( 
+		(src1 (vm_get_value vm_name (car arguments)))
+		(src2 (get vm_name (cadr arguments)))
+	)
+		(setf (get vm_name (cadr arguments)) (* src1 src2))
+	)
 )
 
 (defun vm_run_div (vm_name arguments)
-    (let ( 
-        (src1 (vm_get_value vm_name (car arguments)))
-        (src2 (get vm_name (cadr arguments)))
-    )
-        (setf (get vm_name (cadr arguments)) (/ src1 src2))
-    )
+	(let ( 
+		(src1 (vm_get_value vm_name (car arguments)))
+		(src2 (get vm_name (cadr arguments)))
+	)
+		(setf (get vm_name (cadr arguments)) (/ src1 src2))
+	)
 )
 
 (defun vm_run_decr (vm_name arguments)
-    (let ( (src (get vm_name (car arguments))))
-        (setf (get vm_name (car arguments)) (- src 1))
-    )
+	(let ( (src (get vm_name (car arguments))))
+		(setf (get vm_name (car arguments)) (- src 1))
+	)
 )
 
 (defun vm_run_incr (vm_name arguments)
-    (let ( (src (get vm_name (car arguments))))
-        (setf (get vm_name (car arguments)) (+ src 1))
-    )
+	(let ( (src (get vm_name (car arguments))))
+		(setf (get vm_name (car arguments)) (+ src 1))
+	)
 )
 
 (defun vm_run_push (vm_name arguments)
-    (let ( (src (vm_get_value vm_name (car arguments))))
-        (setf (get vm_name 'memory) (array_set (get vm_name 'memory) (get vm_name 'SP) src))
-        (setf (get vm_name 'SP) (+ (get vm_name 'SP) 1))
-    )
+	(let ( (src (vm_get_value vm_name (car arguments))))
+		(setf (get vm_name 'memory) (array_set (get vm_name 'memory) (get vm_name 'SP) src))
+		(setf (get vm_name 'SP) (+ (get vm_name 'SP) 1))
+	)
 )
 
 (defun vm_run_pop (vm_name arguments)
@@ -271,7 +271,7 @@
 )
 
 (defun vm_run_jmp (vm_name arguments)
-    (setf (get vm_name 'PC) (vm_get_adresse_label vm_name (vm_get_address vm_name (car arguments))))
+	(setf (get vm_name 'PC) (vm_get_adresse_label vm_name (vm_get_address vm_name (car arguments))))
 )
 
 (defun vm_run_jsr (vm_name arguments)
@@ -338,20 +338,20 @@
 )
 
 (defun get_argument_func_lisp (vm_name nb_arguments)
-    (if (= nb_arguments 0)
-        '()
-        (progn
-            (vm_run_move vm_name (list 'FP 'R0))
-            (vm_run_move vm_name (list (list':CONST nb_arguments) 'R1))
-            (vm_run_sub vm_name (list 'R0 'R1))
-            (vm_run_move vm_name (list 'R1 'R0))
-            (vm_run_load vm_name (list 'R0 'R0))
-            (append 
-                (list (vm_get_value vm_name 'R0))
-                (get_argument_func_lisp vm_name (- nb_arguments 1))
-            )
-        )
-    )
+	(if (= nb_arguments 0)
+		'()
+		(progn
+			(vm_run_move vm_name (list 'FP 'R0))
+			(vm_run_move vm_name (list (list':CONST nb_arguments) 'R1))
+			(vm_run_sub vm_name (list 'R0 'R1))
+			(vm_run_move vm_name (list 'R1 'R0))
+			(vm_run_load vm_name (list 'R0 'R0))
+			(append 
+				(list (vm_get_value vm_name 'R0))
+				(get_argument_func_lisp vm_name (- nb_arguments 1))
+			)
+		)
+	)
 )
 
 (defun vm_run_rtn (vm_name arguments)
@@ -361,101 +361,101 @@
 )
 
 (defun vm_run_cmp (vm_name arguments)
-    (let ( 
-        (src1 (vm_get_value vm_name (car arguments)))
-        (src2 (vm_get_value vm_name (cadr arguments)))
-    )
-        (if (< src1 src2)
-            (progn
-                (setf (get vm_name 'INF) T)
-                (setf (get vm_name 'EQU) NIL)
-                (setf (get vm_name 'SUP) NIL)
-            )
-            (if (> src1 src2)
-                (progn
-                    (setf (get vm_name 'INF) NIL)
-                    (setf (get vm_name 'EQU) NIL)
-                    (setf (get vm_name 'SUP) T)
-                )
-                (progn
-                    (setf (get vm_name 'INF) NIL)
-                    (setf (get vm_name 'EQU) T)
-                    (setf (get vm_name 'SUP) NIL)
-                )
-            )
-        )
-    )
+	(let ( 
+		(src1 (vm_get_value vm_name (car arguments)))
+		(src2 (vm_get_value vm_name (cadr arguments)))
+	)
+		(if (< src1 src2)
+			(progn
+				(setf (get vm_name 'INF) T)
+				(setf (get vm_name 'EQU) NIL)
+				(setf (get vm_name 'SUP) NIL)
+			)
+			(if (> src1 src2)
+				(progn
+					(setf (get vm_name 'INF) NIL)
+					(setf (get vm_name 'EQU) NIL)
+					(setf (get vm_name 'SUP) T)
+				)
+				(progn
+					(setf (get vm_name 'INF) NIL)
+					(setf (get vm_name 'EQU) T)
+					(setf (get vm_name 'SUP) NIL)
+				)
+			)
+		)
+	)
 )
 
 (defun vm_run_jgt (vm_name arguments)
-    (if  (get vm_name 'SUP)
-        (setf (get vm_name 'PC) (vm_get_adresse_label vm_name  (vm_get_address vm_name (car arguments))))
-        NIL
-    )
+	(if  (get vm_name 'SUP)
+		(setf (get vm_name 'PC) (vm_get_adresse_label vm_name  (vm_get_address vm_name (car arguments))))
+		NIL
+	)
 )
 
 (defun vm_run_jge (vm_name arguments)
-    (if (or (get vm_name 'EQU) (get vm_name 'SUP))
-        (setf (get vm_name 'PC) (vm_get_adresse_label vm_name  (vm_get_address vm_name (car arguments))))
-        NIL
-    )
+	(if (or (get vm_name 'EQU) (get vm_name 'SUP))
+		(setf (get vm_name 'PC) (vm_get_adresse_label vm_name  (vm_get_address vm_name (car arguments))))
+		NIL
+	)
 )
 
 (defun vm_run_jlt (vm_name arguments)
-    (if (get vm_name 'INF)
-        (setf (get vm_name 'PC) (vm_get_adresse_label vm_name  (vm_get_address vm_name (car arguments))))
-        NIL
-    )
+	(if (get vm_name 'INF)
+		(setf (get vm_name 'PC) (vm_get_adresse_label vm_name  (vm_get_address vm_name (car arguments))))
+		NIL
+	)
 )
 
 (defun vm_run_jle (vm_name arguments)
-    (if (or (get vm_name 'EQU) (get vm_name 'INF))
-        (setf (get vm_name 'PC) (vm_get_adresse_label vm_name  (vm_get_address vm_name (car arguments))))
-        NIL
-    )
+	(if (or (get vm_name 'EQU) (get vm_name 'INF))
+		(setf (get vm_name 'PC) (vm_get_adresse_label vm_name  (vm_get_address vm_name (car arguments))))
+		NIL
+	)
 )
 
 (defun vm_run_jeq (vm_name arguments)
-    (if (get vm_name 'EQU)
-        (setf (get vm_name 'PC) (vm_get_adresse_label vm_name  (vm_get_address vm_name (car arguments))))
-        NIL
-    )
+	(if (get vm_name 'EQU)
+		(setf (get vm_name 'PC) (vm_get_adresse_label vm_name  (vm_get_address vm_name (car arguments))))
+		NIL
+	)
 )
 
 (defun vm_run_jne (vm_name arguments)
-    (if (not (get vm_name 'EQU))
-        (setf (get vm_name 'PC) (vm_get_adresse_label vm_name  (vm_get_address vm_name (car arguments))))
-        NIL
-    )
+	(if (not (get vm_name 'EQU))
+		(setf (get vm_name 'PC) (vm_get_adresse_label vm_name  (vm_get_address vm_name (car arguments))))
+		NIL
+	)
 )
 
 (defun vm_run_test (vm_name arguments)
-    (if (null (get vm_name (car arguments)))
-        (setf (get vm_name 'FNIL) T)
-        (setf (get vm_name 'FNIL) NIL)
-    )
+	(if (null (get vm_name (car arguments)))
+		(setf (get vm_name 'FNIL) T)
+		(setf (get vm_name 'FNIL) NIL)
+	)
 )
 
 (defun vm_run_jtrue (vm_name arguments)
-    (if (not (get vm_name 'FNIL))
-        (setf (get vm_name 'PC) (vm_get_adresse_label vm_name  (vm_get_address vm_name (car arguments))))
-        NIL
-    )
+	(if (not (get vm_name 'FNIL))
+		(setf (get vm_name 'PC) (vm_get_adresse_label vm_name  (vm_get_address vm_name (car arguments))))
+		NIL
+	)
 )
 
 (defun vm_run_jnil (vm_name arguments)
-    (if  (get vm_name 'FNIL)
-        (setf (get vm_name 'PC) (vm_get_adresse_label vm_name  (vm_get_address vm_name (car arguments))))
-        NIL
-    )
+	(if  (get vm_name 'FNIL)
+		(setf (get vm_name 'PC) (vm_get_adresse_label vm_name  (vm_get_address vm_name (car arguments))))
+		NIL
+	)
 )
 
 (defun vm_run_halt (vm_name arguments)
-    (setf(get vm_name 'PC )(get vm_name 'EC))
+	(setf(get vm_name 'PC )(get vm_name 'EC))
 )
 
 (defun vm_get_adresse_label(vm_name label)
-    (+ (map_get (get vm_name 'symbols) label) (get vm_name 'CP))
+	(+ (map_get (get vm_name 'symbols) label) (get vm_name 'CP))
 )
 
 (vm_create 'Roger 50000)
