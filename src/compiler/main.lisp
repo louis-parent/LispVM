@@ -106,7 +106,7 @@
 				(list (list 'PUSH 'R0))
 				(append 
 					(list (list 'PUSH (list ':CONST 2)))
-					(list (list 'JSR 'setf))
+					(list (list 'JSR 'setf) '(POP R1) '(POP R1) '(POP R1))
 				)
 			)
 		)
@@ -118,10 +118,20 @@
 )
 
 (defun compile_call_function (operator next environment)
-	(if (is_known_function operator (get '__LISP_COMPILER__ '__GLOBALS__))
-		(compile_known_function operator next environment)
-		(compile_lisp_fonction operator next environment)
-	)
+	(append 
+    	(if (is_known_function operator (get '__LISP_COMPILER__ '__GLOBALS__))
+    		(compile_known_function operator next environment)
+    		(compile_lisp_fonction operator next environment)
+    	)
+    	(create_pop (+ (size_array next) 1))
+    )
+)
+
+(defun create_pop (n)
+    (if (= 0 n)
+        '()
+        (append (create_pop (- n 1)) (list '(POP R1)))
+    )
 )
 
 (defun compile_lisp_fonction (func next environment)
