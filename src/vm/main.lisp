@@ -18,6 +18,7 @@
 	(setf (get vm_name 'SUP) NIL)
 	(setf (get vm_name 'FNIL) NIL)
 	(setf (get vm_name 'symbols) '())
+	"VM Created"
 )
 
 (defun vm_load (vm_name instructions)
@@ -29,6 +30,7 @@
 			(vm_load_symbols vm_name (nthcdr (floor (get vm_name 'CP)) (get vm_name 'memory)) 0)
 		)
 	);création de la liste des symboles présents
+	"VM Loaded"
 )
 
 (defun vm_load_symbols (vm_name instructions instruction_index)
@@ -320,18 +322,26 @@
     (if (null instruction)
         '()
         (if (and (listp (car instruction)) (eq (caar instruction) ':VAR))
-            (cons 
-            	(nth
-    				(+
-    					(nth 
-	    					(+ (get vm_name 'FP) 1)
-	    					(get vm_name 'memory)
-	    				)
-	    				(cadar instruction)
-	    			)
-    				(get vm_name 'memory)
-    			)
-            	(replace_offset_to_runtime_value vm_name (cdr instruction))
+            (let (
+            		(value (nth
+	    				(+
+	    					(nth 
+		    					(+ (get vm_name 'FP) 1)
+		    					(get vm_name 'memory)
+		    				)
+		    				(cadar instruction)
+		    			)
+	    				(get vm_name 'memory)
+	    			))
+            	)
+
+            	(cons
+	            	(if (symbolp value)
+		        		(eval `(quote ',value))
+		        		value
+		        	)
+	            	(replace_offset_to_runtime_value vm_name (cdr instruction))
+	            )
             )
 
             (cons
@@ -343,9 +353,7 @@
 )
 
 (defun call-setf (key value)
-	(let ((quoted (quote key)))
-		(eval `(setf ,quoted ,value))
-	)
+	(eval `(setf ,key ,value))
 )
 
 (defun get_argument_func_lisp (vm_name nb_arguments)
@@ -472,44 +480,36 @@
 (vm_create 'Roger 10000)
 (vm_load 'Roger '(
     (JMP SKIP_FUNCTION0)
-	(LABEL WRITE-TEST)
-
-	    (PUSH (:CONST (GET (:VAR -1) 'TEST)))
-	    (MOVE (:CONST 42) R0)
+    (LABEL HELLO)
+	    (MOVE (:CONST T) R0)
 	    (PUSH R0)
-	    (PUSH (:CONST 2))
-	    (JSR SETF)
-	    (POP R1)
-	    (POP R1)
-	    (POP R1)
+
+	    (MOVE (:CONST "Hello ~d !") R0)
+	    (PUSH R0)
 
 	    (MOVE FP R1)
 	    (ADD (:CONST -1) R1)
 	    (LOAD R1 R0)
-
 	    (PUSH R0)
-	    (MOVE (:CONST TEST) R0)
-	    (PUSH R0)
-	 	(PUSH (:CONST 2))
-	 	(JSR GET)
-	 	(POP R1)
-	 	(POP R1)
-	 	(POP R1)
 
-	 	(PUSH R0)
-	 	(PUSH (:CONST 1))
-	 	(JSR WRITE)
-	 	(POP R1)
-	 	(POP R1)
+	    (PUSH (:CONST 3))
 
- 	(RTN)
- 	(LABEL SKIP_FUNCTION0)
+	    (JSR FORMAT)
 
- 	(MOVE (:CONST ALBERT) R0)
+	    (POP R1)
+	    (POP R1)
+	    (POP R1)
+	    (POP R1)
+    (RTN)
+    (LABEL SKIP_FUNCTION0)
 
+ 	(MOVE (:CONST "World") R0)
  	(PUSH R0)
+
  	(PUSH (:CONST 1))
- 	(JSR WRITE-TEST)
+
+ 	(JSR HELLO)
+ 	
  	(POP R1)
  	(POP R1)
 ))

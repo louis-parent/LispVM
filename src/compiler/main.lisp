@@ -768,10 +768,9 @@
 )
 
 (compile_lisp '(
-	(defun write-test (env)
-		(setf (get env 'test) 42)
-		(write (get env 'test))
+	(defun hello (name)
+		(format T "Hello ~d !" name)
 	)
 
-	(write-test 'Albert)
+	(hello "World")
 ))
