@@ -101,14 +101,14 @@
 	(append 
 		(list 
 			(list 'PUSH (list ':CONST (replace_var_by_environment_offset (car args) environment)))
+		)
+		(append 
+			(compile_lisp_expression (cadr args) environment)
 			(append 
-				(compile_lisp_expression (cadr args) environment)
+				(list (list 'PUSH 'R0))
 				(append 
-					(list (list 'PUSH 'R0))
-					(append 
-						(list (list 'PUSH (list ':CONST 2)))
-						(list (list 'JSR 'setf) '(POP R1) '(POP R1) '(POP R1))
-					)
+					(list (list 'PUSH (list ':CONST 2)))
+					(list (list 'JSR 'setf) '(POP R1) '(POP R1) '(POP R1))
 				)
 			)
 		)
@@ -169,9 +169,21 @@
 			(nb_parameter (size_array next))
 		)
 		
-		(append (compile_args_call_function_lisp next environment)
-		(append (list (list 'PUSH (list ':CONST nb_parameter)))
-		(append (list (list 'JSR func)))))
+		(append 
+		    (compile_args_call_function_lisp next environment)
+		        (append 
+		            (list 
+		                (list 'PUSH 
+		                    (list ':CONST nb_parameter)
+		                )
+		             )
+		            (append 
+		                (list 
+		                    (list 'JSR func)
+		                )
+		            )
+		       )
+		 )
 	)
 )
 
@@ -192,7 +204,9 @@
 	(if (null args)
 		'()
 		(progn
-			(append (compile_lisp_expressions args environment)
+			(write args)
+			(write-line "=======")
+			(append (compile_lisp_expressions (list (car args)) environment)
 			(append (list (list 'PUSH 'R0))
 			(compile_args_call_function (cdr args) environment)))
 		)
@@ -769,7 +783,7 @@
 
 (write (compile_lisp '(
 	
-	;compteur ordinale(PC), base pointer (BP), frame pointer (FP), stack pointer (SP), finCode (EC), begin code pointer(CP), finStack (ES), r0, r1, r2, stop, inf, equal, sup 
+;compteur ordinale(PC), base pointer (BP), frame pointer (FP), stack pointer (SP), finCode (EC), begin code pointer(CP), finStack (ES), r0, r1, r2, stop, inf, equal, sup 
 
 (defun vm_create (vm_name size_memory)
     (setf (get vm_name 'memory) (make-list size_memory))
@@ -854,7 +868,7 @@
 	)
 )
 
-(defun vm_run (vm_name) 
+(defun vm_run (vm_name)
     (if (= (get vm_name 'PC) (get vm_name 'EC))
         (get vm_name 'R0) ;fin de la vm
         (let ((current_instruction (get_current_instruction vm_name)))
@@ -1069,14 +1083,13 @@
         (
             (nb_arguments (vm_get_value vm_name 'R0))
         )
-
         (vm_run_move vm_name 
             (list 
                 (list 
                     ':CONST 
                     ( if (eq func 'setf)
                         (call-setf 
-                        	(replace_offset_to_runtime_value vm_name (car (get_argument_func_lisp vm_name nb_arguments))) 
+                        	(replace_offset_to_runtime_value vm_name (car (get_argument_func_lisp vm_name nb_arguments)))
                         	(cadr (get_argument_func_lisp vm_name nb_arguments))
                         )
                         
@@ -1107,10 +1120,7 @@
             	)
 
             	(cons
-	            	(if (symbolp value)
-		        		(eval `(quote ',value))
-		        		value
-		        	)
+            	    (eval `(quote ',value))
 	            	(replace_offset_to_runtime_value vm_name (cdr instruction))
 	            )
             )
@@ -1124,7 +1134,10 @@
 )
 
 (defun call-setf (key value)
-	(eval `(setf ,key ,value))
+    (if (listp value)
+        (eval `(setf ,key ',value))
+        (eval `(setf ,key ,value))
+    )
 )
 
 (defun get_argument_func_lisp (vm_name nb_arguments)
@@ -1248,13 +1261,17 @@
 	(+ (map_get (get vm_name 'symbols) label) (get vm_name 'CP))
 )
 
-(vm_create 'Roger 40000)
-(vm_load 'Roger '(
-    
+(vm_create 'ALBERT 10000)
+(vm_load 'ALBERT '(
 
+(WRITE (:CONST 5))
 
 ))
 
-(vm_run 'Roger)
+(write-line "VM RUNNING")
+(vm_run 'ALBERT)
+
+
 
 )))
+
