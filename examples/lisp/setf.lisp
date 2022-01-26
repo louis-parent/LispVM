@@ -3,7 +3,7 @@
     (setf (get 'name 'value) 7)
 )
 
-(defun reverse_names ()
+(defun reverse_alphabet ()
     (let
         (
             (current (get 'name 'alphabet))
@@ -22,7 +22,7 @@
 (defun all_test ()
     (progn
         (set_variable)
-        (write (reverse_names))
+        (write (reverse_alphabet))
         (write (- 7 2))
     )
 )
